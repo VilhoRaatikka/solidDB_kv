@@ -1,0 +1,17 @@
+"CREATE PROCEDURE kv_del (p_key VARCHAR(256))
+RETURNS (removed INTEGER)
+MODIFIES SQL DATA
+BEGIN
+    DECLARE dummy INTEGER;
+    EXEC SQL WHENEVER SQLERROR ROLLBACK, ABORT;
+    EXEC SQL EXECDIRECT
+         CREATE TABLE IF NOT EXISTS kv_store (
+             key     VARCHAR PRIMARY KEY,
+             val     LONG VARCHAR,
+             updated TIMESTAMP );
+    EXEC SQL USING (p_key) EXECDIRECT 
+        DELETE FROM kv_store WHERE key=:p_key;
+    removed := SQLROWCOUNT;
+    EXEC SQL COMMIT WORK;
+    RETURN ROW;
+END";
